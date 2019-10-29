@@ -6,10 +6,13 @@ class Tracer
     @cache_nodes = {}
   end
 
-  def trace_by_value(value)
-    File.open("out.dot", "w") do |out|
-      address = @db.val_addr[value]
-      build_subgraph(out, address)
+  def trace_by_value(value, output: "out.dot")
+    File.open(output, "w") do |out|
+      addresses = @db.val_addr[value]
+
+      addresses.each do |address|
+        build_subgraph(out, address)
+      end
     end
   end
 
