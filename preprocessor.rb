@@ -26,7 +26,9 @@ class Preprocessor
     IndexDatabase.new(heap_file: @heap_file,
                       addr_pos_path: addr_pos_path,
                       val_addr_path: val_addr_path,
-                      addr_ref_path: addr_ref_path)
+                      addr_ref_path: addr_ref_path).tap do |db|
+                        db.load
+                      end
   end
 
   private
@@ -59,15 +61,15 @@ class Preprocessor
       prev_pos = f.pos
       f.each_line do |line|
         data = JSON.parse(line)
+        # TODO: this line should be refactored
+        addr = data["address"] || data["root"] # guess it may be root (if no addr)
 
-        if addr = data["address"]
-          addr_pos[addr] = prev_pos
-          prev_pos       = f.pos
+        addr_pos[addr] = prev_pos
+        prev_pos       = f.pos
 
-          if value = data["value"]
-            val_addr[value] ||= []
-            val_addr[value] << addr
-          end
+        if value = data["value"]
+          val_addr[value] ||= []
+          val_addr[value] << addr
         end
       end
     end
@@ -76,6 +78,7 @@ class Preprocessor
       data = JSON.parse(line)
 
       if references = data["references"]
+        # TODO: this line should be refactored
         addr = data["address"] || data["root"] # guess it may be root (if no addr)
         references.each do |ref|
           addr_ref[ref] ||= []

@@ -18,7 +18,7 @@ class IndexDatabase
   end
 
   def fetch_content(address:)
-    pos = @addr_pos[addr_pos]
+    pos = @addr_pos[address]
     File.open(@heap_file) do |f|
       f.seek(pos)
       JSON.parse(f.readline)
