@@ -1,5 +1,6 @@
 require 'digest'
 require 'json'
+require 'fileutils'
 require_relative 'index_database'
 
 class Preprocessor
@@ -8,8 +9,9 @@ class Preprocessor
   VAL_ADDR_INDEX = "val_addr.idx"
   ADDR_REF_INDEX = "addr_ref.idx"
 
-  def initialize(ruby_heap_dump_file)
+  def initialize(ruby_heap_dump_file, cache_location: '.')
     @heap_file = ruby_heap_dump_file
+    @cache_location = cache_location
   end
 
   def process
@@ -34,20 +36,20 @@ class Preprocessor
   private
 
   def addr_pos_path
-    File.join(@digest, ADDR_POS_INDEX)
+    File.join(@cache_location, @digest, ADDR_POS_INDEX)
   end
 
   def val_addr_path
-    File.join(@digest, VAL_ADDR_INDEX)
+    File.join(@cache_location, @digest, VAL_ADDR_INDEX)
   end
 
   def addr_ref_path
-    File.join(@digest, ADDR_REF_INDEX)
+    File.join(@cache_location, @digest, ADDR_REF_INDEX)
   end
 
   def build_index_db(digest)
-    path = digest
-    Dir.mkdir(path)
+    path = File.join(@cache_location, digest)
+    FileUtils.mkpath(path)
 
     # build three index mappings:
     # 1. given `address`, have file position in original file which reference it
@@ -106,6 +108,6 @@ class Preprocessor
   def was_processed?(digest)
     # check our cache folder existance
     # it would be better to check the content inside
-    File.directory?(digest)
+    File.directory?(File.join(@cache_location, digest))
   end
 end
